@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple QR Code Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f4f7f6;
+        }
+
+        #app-container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        #qrcode {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px dashed #ddd;
+        }
+
+        h2 {
+            color: #333;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="app-container">
+        <h2>🔗 QR Code Generator</h2>
+
+        <p>Enter the URL or text you want to encode:</p>
+        <input
+            type="text"
+            id="urlInput"
+            placeholder="e.g., https://www.yourwebsite.com"
+            onkeyup="generateQR()" />
+
+        <p>Your QR Code:</p>
+        <div id="qrcode"></div>
+
+        <p style="margin-top: 30px; color: #555;">
+            *Right-click the generated QR code and select "Save image as..." to download the PNG file.
+        </p>
+    </div>
+
+    <script>
+        // Store the QR code object so we can clear/re-draw it
+        let qrCodeInstance = null
+
+        function generateQR() {
+            const url = document.getElementById('urlInput').value.trim()
+            const qrCodeContainer = document.getElementById('qrcode')
+
+            // 1. Clear the previous QR code
+            if (qrCodeInstance) {
+                // Remove the previous content (Canvas/Table) from the container
+                qrCodeContainer.innerHTML = ''
+                qrCodeInstance = null
+            }
+
+            // Only generate if there is input
+            if (url) {
+                // 2. Create a new QR code instance
+                qrCodeInstance = new QRCode(qrCodeContainer, {
+                    text: url,
+                    width: 256, // Set size
+                    height: 256,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    // Note: This library automatically handles error correction (usually Medium)
+                    correctLevel: QRCode.CorrectLevel.H // Use High correction for better readability/resilience
+                })
+            } else {
+                qrCodeContainer.innerHTML = 'Enter a URL above to generate.'
+            }
+        }
+
+        // Call the function on page load to display initial message
+        window.onload = generateQR;
+    </script>
+
+</body>
+
+</html>
