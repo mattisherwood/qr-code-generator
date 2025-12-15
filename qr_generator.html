@@ -5,7 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simple QR Code Generator</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- Remove qrcodejs, add qr-code-styling -->
+    <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.6.0/lib/qr-code-styling.js"></script>
 
     <style>
         body {
@@ -47,6 +48,31 @@
             padding-bottom: 10px;
             margin-bottom: 20px;
         }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 
@@ -63,46 +89,76 @@
             onkeyup="generateQR()" />
 
         <p>Your QR Code:</p>
+
         <div id="qrcode"></div>
 
         <p style="margin-top: 30px; color: #555;">
             *Right-click the generated QR code and select "Save image as..." to download the PNG file.
         </p>
+
+        <div class="controls">
+            <button id="downloadSvgBtn" onclick="downloadSVG()" disabled>
+                ⬇️ Download SVG File
+            </button>
+            <button id="downloadPngBtn" onclick="downloadPNG()" disabled>
+                ⬇️ Download PNG File
+            </button>
+        </div>
     </div>
 
     <script>
-        // Store the QR code object so we can clear/re-draw it
-        let qrCodeInstance = null
+        // Use qr-code-styling for SVG and PNG support
+        let qrCodeStyling = null
+
+        function enableDownloadButtons(enable) {
+            document.getElementById('downloadSvgBtn').disabled = !enable
+            document.getElementById('downloadPngBtn').disabled = !enable
+        }
 
         function generateQR() {
             const url = document.getElementById('urlInput').value.trim()
             const qrCodeContainer = document.getElementById('qrcode')
 
-            // 1. Clear the previous QR code
-            if (qrCodeInstance) {
-                // Remove the previous content (Canvas/Table) from the container
-                qrCodeContainer.innerHTML = ''
-                qrCodeInstance = null
-            }
+            // Remove previous QR code
+            qrCodeContainer.innerHTML = ''
 
-            // Only generate if there is input
             if (url) {
-                // 2. Create a new QR code instance
-                qrCodeInstance = new QRCode(qrCodeContainer, {
-                    text: url,
-                    width: 256, // Set size
+                qrCodeStyling = new QRCodeStyling({
+                    width: 256,
                     height: 256,
-                    colorDark: "#000000",
-                    colorLight: "#ffffff",
-                    // Note: This library automatically handles error correction (usually Medium)
-                    correctLevel: QRCode.CorrectLevel.H // Use High correction for better readability/resilience
+                    data: url,
+                    image: '',
+                    dotsOptions: {
+                        color: "#000000",
+                        type: "square"
+                    },
+                    backgroundOptions: {
+                        color: "#ffffff"
+                    },
+                    qrOptions: {
+                        errorCorrectionLevel: 'H'
+                    }
                 })
+                qrCodeStyling.append(qrCodeContainer)
+                enableDownloadButtons(true)
             } else {
                 qrCodeContainer.innerHTML = 'Enter a URL above to generate.'
+                enableDownloadButtons(false)
             }
         }
 
-        // Call the function on page load to display initial message
+        function downloadSVG() {
+            if (qrCodeStyling) {
+                qrCodeStyling.download({ extension: "svg" })
+            }
+        }
+
+        function downloadPNG() {
+            if (qrCodeStyling) {
+                qrCodeStyling.download({ extension: "png" })
+            }
+        }
+
         window.onload = generateQR;
     </script>
 
